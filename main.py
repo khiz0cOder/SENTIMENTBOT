@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from transformers import pipeline
+import os
 
 app = FastAPI()
 
@@ -12,7 +13,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-sentiment_model = pipeline("sentiment-analysis")
+sentiment_model = pipeline(
+    "sentiment-analysis",
+    model="distilbert-base-uncased-finetuned-sst-2-english",
+    device=-1
+)
 
 class TextInput(BaseModel):
     text: str
