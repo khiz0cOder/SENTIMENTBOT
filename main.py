@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from transformers import pipeline
+import httpx
 import os
 
 app = FastAPI()
@@ -13,11 +13,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-sentiment_model = pipeline(
-    "sentiment-analysis",
-    model="distilbert-base-uncased-finetuned-sst-2-english",
-    device=-1
-)
+HF_API_URL = "https://api-inference.huggingface.co/models/distilbert-base-uncased-finetuned-sst-2-english"
+HF_TOKEN = os.environ.get("HF_TOKEN", "")
 
 class TextInput(BaseModel):
     text: str
@@ -28,7 +25,9 @@ def root():
 
 @app.post("/analyze")
 def analyze(input: TextInput):
-    result = sentiment_model(input.text)[0]
+    headers = {"Authorization": f"Bearer {HF_TOKEN}"} if HF_TOKEN else {}
+    response = httpx.post(HF_API_URL, json={"inputs": input.text}, headers=headers)
+    result = response.json()[0][0]
     return {
         "text": input.text,
         "sentiment": result["label"],
