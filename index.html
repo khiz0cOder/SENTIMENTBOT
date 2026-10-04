@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SentimentBot</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #0f0f0f;
+      color: #f0f0f0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .container {
+      width: 100%;
+      max-width: 600px;
+      padding: 40px 20px;
+    }
+    h1 { font-size: 2rem; margin-bottom: 8px; }
+    .subtitle { color: #888; margin-bottom: 32px; font-size: 0.95rem; }
+    textarea {
+      width: 100%;
+      background: #1a1a1a;
+      border: 1px solid #2a2a2a;
+      border-radius: 10px;
+      padding: 16px;
+      color: #f0f0f0;
+      font-size: 1rem;
+      resize: none;
+      height: 120px;
+      outline: none;
+    }
+    textarea:focus { border-color: #555; }
+    button {
+      margin-top: 12px;
+      width: 100%;
+      padding: 14px;
+      background: #f0f0f0;
+      color: #0f0f0f;
+      border: none;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    button:hover { background: #ddd; }
+    .result {
+      margin-top: 24px;
+      padding: 20px;
+      border-radius: 10px;
+      display: none;
+    }
+    .POSITIVE { background: #0d2b1a; border: 1px solid #1a5c35; }
+    .NEGATIVE { background: #2b0d0d; border: 1px solid #5c1a1a; }
+    .label {
+      font-size: 1.4rem;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+    .POSITIVE .label { color: #4caf82; }
+    .NEGATIVE .label { color: #cf6679; }
+    .confidence { color: #888; font-size: 0.9rem; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🤖 SentimentBot</h1>
+    <p class="subtitle">Paste any text to analyze its sentiment</p>
+    <textarea id="input" placeholder="Type or paste text here..."></textarea>
+    <button onclick="analyze()">Analyze</button>
+    <div class="result" id="result">
+      <div class="label" id="label"></div>
+      <div class="confidence" id="confidence"></div>
+    </div>
+  </div>
+
+  <script>
+    async function analyze() {
+      const text = document.getElementById('input').value.trim();
+      if (!text) return;
+
+      const res = await fetch('http://127.0.0.1:8000/analyze', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text })
+      });
+
+      const data = await res.json();
+      const result = document.getElementById('result');
+      result.className = 'result ' + data.sentiment;
+      result.style.display = 'block';
+      document.getElementById('label').textContent = data.sentiment;
+      document.getElementById('confidence').textContent =
+        'Confidence: ' + (data.confidence * 100).toFixed(1) + '%';
+    }
+  </script>
+</body>
+</html>
